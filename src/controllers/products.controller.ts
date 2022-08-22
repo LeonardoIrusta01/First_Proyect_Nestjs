@@ -10,12 +10,16 @@ import {
   HttpStatus,
   HttpCode,
   Res,
+  ParseIntPipe,
 } from '@nestjs/common';
 
 import { Response } from 'express';
 
+import { ProductsService } from 'src/services/products.service';
+
 @Controller('products')
 export class ProductsController {
+  constructor(private productService: ProductsService) {}
   /* Rutas no Dinamicas */
 
   /* Forma mas sencilla de manipular las Query */
@@ -25,9 +29,10 @@ export class ProductsController {
     @Query('offset') offset = 0,
     @Query('brand') brand: string,
   ) {
-    return {
-      message: `products: limit => ${limit}, offset => ${offset}, brand => ${brand}`,
-    };
+    // return {
+    //   message: `products: limit => ${limit}, offset => ${offset}, brand => ${brand}`,
+    // };
+    return this.productService.findAll();
   }
 
   @Get('filter')
@@ -38,27 +43,23 @@ export class ProductsController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   create(@Body() payload: any) {
-    return {
-      message: 'accion de crear',
-      payload,
-    };
+    // return {
+    //   message: 'accion de crear',
+    //   payload,
+    // };
+    return this.productService.create(payload);
   }
 
   @Put(':id')
   @HttpCode(HttpStatus.ACCEPTED)
-  update(@Param('id') id: number, @Body() payload: any) {
-    return {
-      message: `El producto con el id ${id} fue actualizado`,
-      payload,
-    };
+  update(@Param('id', ParseIntPipe) id: number, @Body() payload: any) {
+    return this.productService.update(id, payload);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.ACCEPTED)
-  delete(@Param('id') id: number) {
-    return {
-      message: `El producto con el id ${id} fue eliminada`,
-    };
+  delete(@Param('id', ParseIntPipe) id: number) {
+    return this.productService.delete(id);
   }
 
   /* Rutas Dinámicas */
@@ -66,8 +67,8 @@ export class ProductsController {
   /*  Forma mas sencilla de recibirlo */
   @Get(':productId')
   @HttpCode(HttpStatus.ACCEPTED)
-  getProduct(@Param('productId') productId: string) {
-    return { message: `product ${productId}` };
+  getProduct(@Param('productId', ParseIntPipe) productId: number) {
+    return this.productService.findOne(productId);
   }
 
   /* Forma de implementar la respuesta con Express
